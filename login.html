@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Enejistats</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #001f3f;
+      color: white;
+      padding: 1em 2em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    nav a {
+      margin-left: 1em;
+      color: white;
+      text-decoration: none;
+    }
+
+    main {
+      padding: 2em;
+      background: white;
+    }
+
+    h2 {
+      text-align: center;
+      color: #001f3f;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 2em auto;
+      background: #f9f9f9;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    label {
+      display: block;
+      margin-top: 1em;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.6em;
+      margin-top: 0.3em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button[type="submit"] {
+      margin-top: 2em;
+      width: 100%;
+      padding: 0.8em;
+      background: #001f3f;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #004080;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      background: #001f3f;
+      color: white;
+      padding: 1em;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Enejistats</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="register.html">Register</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>User Login</h2>
+    <form id="loginForm">
+      <label for="email">Email Address:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+
+      <button type="submit">Login</button>
+      <p id="errorMsg" class="error hidden">Invalid email or password. Please try again.</p>
+    </form>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Enejistats</p>
+  </footer>
+
+  <script>
+    const mockUsers = [
+      { email: 'player@example.com', password: 'player123', type: 'player', redirect: 'player-dashboard.html' },
+      { email: 'club@example.com', password: 'club123', type: 'club', redirect: 'club-dashboard.html' },
+      { email: 'scout@example.com', password: 'scout123', type: 'scout', redirect: 'scout-dashboard.html' }
+    ];
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      const match = mockUsers.find(user =>
+        user.email === email &&
+        user.password === password
+      );
+
+      if (match) {
+        window.location.href = match.redirect;
+      } else {
+        document.getElementById('errorMsg').classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
