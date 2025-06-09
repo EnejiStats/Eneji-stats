@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Scout Dashboard | Enejistats</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .modal-xxl {
+      max-width: 95%;
+    }
+    .modal-body iframe {
+      border: none;
+      width: 100%;
+      height: 85vh;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container py-4">
+    <div class="dashboard-header">
+      <h2>Data Scout Dashboard</h2>
+      <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#scoutWidgetModal">
+        <i class="bi bi-clipboard-data me-1"></i> Scout Widget
+      </button>
+    </div>
+
+    <div class="card p-4 mb-3">
+      <h5>Welcome Scout!</h5>
+      <p>From this dashboard, you can enter live stats, view match records, and access tools like the Scout Widget.</p>
+    </div>
+  </div>
+
+  <!-- Scout Widget Modal -->
+  <div class="modal fade" id="scoutWidgetModal" tabindex="-1" aria-labelledby="scoutWidgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-xxl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="scoutWidgetModalLabel">Scout Match Data Entry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <iframe src="scout-widget.html"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-dark text-white text-center py-3">
+    &copy; 2025 Enejistats. All rights reserved.
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
