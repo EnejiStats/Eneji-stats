@@ -767,26 +767,3 @@ app.register_blueprint(club_bp, url_prefix='/api/clubs')
 app.register_blueprint(match_bp, url_prefix='/api/matches')
 app.register_blueprint(scout_bp, url_prefix='/api/scout')
 template('index.html')
-
-# -------------------------------
-# STATUS
-# -------------------------------
-@app.route('/api/status')
-def status():
-    return jsonify({
-        'status': 'running',
-        'users': db.users.count_documents({}),
-        'players': db.players.count_documents({}),
-        'clubs': db.clubs.count_documents({}),
-        'matches': db.matches.count_documents({}),
-        'reports': db.scout_reports.count_documents({})
-    }), 200
-
-# -------------------------------
-# REGISTER BLUEPRINTS
-# -------------------------------
-app.register_blueprint(auth_bp, url_prefix='/api/auth')
-app.register_blueprint(player_bp, url_prefix='/api/players')
-app.register_blueprint(club_bp, url_prefix='/api/clubs')
-app.register_blueprint(match_bp, url_prefix='/api/matches')
-app.register_blueprint(scout_bp, url_prefix='/api/scout')
