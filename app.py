@@ -35,7 +35,6 @@ def register():
     if not all(field in data for field in required):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    # Check if user exists
     for user in data_store['users']:
         if user['email'] == data['email']:
             return jsonify({'error': 'User already exists'}), 400
@@ -44,7 +43,7 @@ def register():
         '_id': generate_id(),
         'username': data['username'],
         'email': data['email'],
-        'password': data['password'],  # In production, hash this
+        'password': data['password'],  # Note: In production, hash this
         'role': data['role'],
         'created_at': datetime.now().isoformat()
     }
@@ -114,7 +113,6 @@ def update_player(player_id):
     data = request.get_json()
     for i, player in enumerate(data_store['players']):
         if player['_id'] == player_id:
-            # Update player fields
             for key, value in data.items():
                 if key != '_id':
                     player[key] = value
@@ -248,9 +246,3 @@ app.register_blueprint(player_bp, url_prefix='/api/players')
 app.register_blueprint(club_bp, url_prefix='/api/clubs')
 app.register_blueprint(match_bp, url_prefix='/api/matches')
 app.register_blueprint(scout_bp, url_prefix='/api/scout')
-
-# -------------------------------
-# RUN APP
-# -------------------------------
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
