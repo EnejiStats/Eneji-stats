@@ -4,6 +4,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
+load_dotenv()  # Load from .env
+
 from routes.auth_routes import auth_bp
 from routes.player_routes import player_bp
 from routes.club_routes import club_bp
