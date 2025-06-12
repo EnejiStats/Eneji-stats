@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnejiStats - Football Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        .feature-card {
+            transition: transform 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">⚽ EnejiStats</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#" onclick="showSection('dashboard')">Dashboard</a>
+                <a class="nav-link" href="#" onclick="showSection('players')">Players</a>
+                <a class="nav-link" href="#" onclick="showSection('clubs')">Clubs</a>
+                <a class="nav-link" href="#" onclick="showSection('matches')">Matches</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Football Statistics Management</h1>
+            <p class="lead">Comprehensive player tracking, scout reports, and match analysis</p>
+            <button class="btn btn-light btn-lg" onclick="checkAPIStatus()">Check API Status</button>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section">
+            <h2 class="mb-4">Dashboard</h2>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card feature-card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Players</h5>
+                            <h2 id="player-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card feature-card bg-success text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Clubs</h5>
+                            <h2 id="club-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card feature-card bg-warning text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Matches</h5>
+                            <h2 id="match-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card feature-card bg-info text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Scout Reports</h5>
+                            <h2 id="scout-count">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players Section -->
+        <div id="players" class="section d-none">
+            <h2 class="mb-4">Player Management</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Add New Player</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="player-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="player-name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Position</label>
+                                    <select class="form-control" id="player-position" required>
+                                        <option value="">Select Position</option>
+                                        <option value="Goalkeeper">Goalkeeper</option>
+                                        <option value="Defender">Defender</option>
+                                        <option value="Midfielder">Midfielder</option>
+                                        <option value="Forward">Forward</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="player-age" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Club</label>
+                                    <input type="text" class="form-control" id="player-club" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nationality</label>
+                                    <input type="text" class="form-control" id="player-nationality" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Player</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Players List</h5>
+                            <button class="btn btn-sm btn-outline-primary float-end" onclick="loadPlayers()">Refresh</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="players-list">Loading players...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clubs Section -->
+        <div id="clubs" class="section d-none">
+            <h2 class="mb-4">Club Management</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Add New Club</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="club-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Club Name</label>
+                                    <input type="text" class="form-control" id="club-name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">League</label>
+                                    <input type="text" class="form-control" id="club-league" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Coach</label>
+                                    <input type="text" class="form-control" id="club-coach" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Country</label>
+                                    <input type="text" class="form-control" id="club-country" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Founded Year</label>
+                                    <input type="number" class="form-control" id="club-founded" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Stadium</label>
+                                    <input type="text" class="form-control" id="club-stadium" required>
+                                </div>
+                                <button type="submit" class="btn btn-success">Add Club</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Clubs List</h5>
+                            <button class="btn btn-sm btn-outline-success float-end" onclick="loadClubs()">Refresh</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="clubs-list">Loading clubs...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matches Section -->
+        <div id="matches" class="section d-none">
+            <h2 class="mb-4">Match Management</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Add New Match</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="match-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Home Team</label>
+                                    <input type="text" class="form-control" id="match-home" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Away Team</label>
+                                    <input type="text" class="form-control" id="match-away" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Date</label>
+                                    <input type="datetime-local" class="form-control" id="match-date" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-control" id="match-status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="Scheduled">Scheduled</option>
+                                        <option value="Live">Live</option>
+                                        <option value="Finished">Finished</option>
+                                        <option value="Postponed">Postponed</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Venue</label>
+                                    <input type="text" class="form-control" id="match-venue" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Score (optional)</label>
+                                    <input type="text" class="form-control" id="match-score" placeholder="e.g., 2-1">
+                                </div>
+                                <button type="submit" class="btn btn-warning">Add Match</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Matches List</h5>
+                            <button class="btn btn-sm btn-outline-warning float-end" onclick="loadMatches()">Refresh</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="matches-list">Loading matches...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        // Show/hide sections
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            document.getElementById(sectionName).classList.remove('d-none');
+            
+            if (sectionName === 'players') loadPlayers();
+            if (sectionName === 'clubs') loadClubs();
+            if (sectionName === 'matches') loadMatches();
+            if (sectionName === 'dashboard') loadDashboard();
+        }
+
+        // Check API status
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                alert(`API Status: ${data.status}\n${data.message}`);
+                loadDashboard();
+            } catch (error) {
+                alert('API is not responding');
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                document.getElementById('player-count').textContent = data.data_counts.players;
+                document.getElementById('club-count').textContent = data.data_counts.clubs;
+                document.getElementById('match-count').textContent = data.data_counts.matches;
+                document.getElementById('scout-count').textContent = data.data_counts.scout_reports;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Player management
+        document.getElementById('player-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const playerData = {
+                name: document.getElementById('player-name').value,
+                position: document.getElementById('player-position').value,
+                age: document.getElementById('player-age').value,
+                club: document.getElementById('player-club').value,
+                nationality: document.getElementById('player-nationality').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/players`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(playerData)
+                });
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('player-form').reset();
+                loadPlayers();
+            } catch (error) {
+                alert('Error adding player');
+            }
+        });
+
+        async function loadPlayers() {
+            try {
+                const response = await fetch(`${API_BASE}/players`);
+                const players = await response.json();
+                const playersList = document.getElementById('players-list');
+                
+                if (players.length === 0) {
+                    playersList.innerHTML = '<p class="text-muted">No players found.</p>';
+                    return;
+                }
+
+                playersList.innerHTML = players.map(player => `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6 class="card-title">${player.name}</h6>
+                            <p class="card-text small">
+                                <strong>Position:</strong> ${player.position}<br>
+                                <strong>Age:</strong> ${player.age}<br>
+                                <strong>Club:</strong> ${player.club}<br>
+                                <strong>Nationality:</strong> ${player.nationality}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('players-list').innerHTML = '<p class="text-danger">Error loading players</p>';
+            }
+        }
+
+        // Club management
+        document.getElementById('club-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clubData = {
+                name: document.getElementById('club-name').value,
+                league: document.getElementById('club-league').value,
+                coach: document.getElementById('club-coach').value,
+                country: document.getElementById('club-country').value,
+                founded: document.getElementById('club-founded').value,
+                stadium: document.getElementById('club-stadium').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/clubs`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(clubData)
+                });
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('club-form').reset();
+                loadClubs();
+            } catch (error) {
+                alert('Error adding club');
+            }
+        });
+
+        async function loadClubs() {
+            try {
+                const response = await fetch(`${API_BASE}/clubs`);
+                const clubs = await response.json();
+                const clubsList = document.getElementById('clubs-list');
+                
+                if (clubs.length === 0) {
+                    clubsList.innerHTML = '<p class="text-muted">No clubs found.</p>';
+                    return;
+                }
+
+                clubsList.innerHTML = clubs.map(club => `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6 class="card-title">${club.name}</h6>
+                            <p class="card-text small">
+                                <strong>League:</strong> ${club.league}<br>
+                                <strong>Coach:</strong> ${club.coach}<br>
+                                <strong>Country:</strong> ${club.country}<br>
+                                <strong>Founded:</strong> ${club.founded}<br>
+                                <strong>Stadium:</strong> ${club.stadium}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('clubs-list').innerHTML = '<p class="text-danger">Error loading clubs</p>';
+            }
+        }
+
+        // Match management
+        document.getElementById('match-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const matchData = {
+                home_team: document.getElementById('match-home').value,
+                away_team: document.getElementById('match-away').value,
+                date: document.getElementById('match-date').value,
+                status: document.getElementById('match-status').value,
+                venue: document.getElementById('match-venue').value,
+                score: document.getElementById('match-score').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/matches`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(matchData)
+                });
+                const result = await response.json();
+                alert(result.message);
+                document.getElementById('match-form').reset();
+                loadMatches();
+            } catch (error) {
+                alert('Error adding match');
+            }
+        });
+
+        async function loadMatches() {
+            try {
+                const response = await fetch(`${API_BASE}/matches`);
+                const matches = await response.json();
+                const matchesList = document.getElementById('matches-list');
+                
+                if (matches.length === 0) {
+                    matchesList.innerHTML = '<p class="text-muted">No matches found.</p>';
+                    return;
+                }
+
+                matchesList.innerHTML = matches.map(match => `
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h6 class="card-title">${match.home_team} vs ${match.away_team}</h6>
+                            <p class="card-text small">
+                                <strong>Date:</strong> ${new Date(match.date).toLocaleString()}<br>
+                                <strong>Status:</strong> ${match.status}<br>
+                                <strong>Venue:</strong> ${match.venue}<br>
+                                ${match.score ? `<strong>Score:</strong> ${match.score}` : ''}
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('matches-list').innerHTML = '<p class="text-danger">Error loading matches</p>';
+            }
+        }
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+    </script>
+</body>
+                              </html>
