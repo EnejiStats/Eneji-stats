@@ -1,163 +1,180 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Player Dashboard | Enejistats</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="../assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
   <style>
-    .profile-photo {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 20px;
-    }
-    .tab-btn.active {
-      background: navy;
+    .profile-header {
+      background: linear-gradient(to right, #25003e, #1f1f1f);
       color: white;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .tab-content {
-      display: none;
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #eee;
+      overflow-x: auto;
     }
-    .tab-content.active {
-      display: block;
+    .tab {
+      padding: 1rem 2rem;
+      cursor: pointer;
+      font-weight: bold;
+      border-bottom: 4px solid transparent;
     }
-    th.sticky {
-      position: sticky;
-      top: 0;
-      background-color: #f8f9fa;
-      z-index: 2;
+    .tab.active {
+      border-color: #25003e;
+      background: #f4f4f4;
+    }
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+    .sub-tabs {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem;
+      background-color: #fafafa;
+      overflow-x: auto;
+    }
+    .sub-tab {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .sub-tab.active {
+      border-color: #25003e;
+      background-color: #eaeaea;
+    }
+    .sub-tab-content { display: none; }
+    .sub-tab-content.active { display: block; }
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .card {
+      background: #f9f9f9;
+      border-radius: 8px;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .card h2 { font-size: 2rem; color: #40006b; }
+    .section { margin: 2rem 1rem; border-top: 4px solid limegreen; padding-top: 1rem; }
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    .match-entry summary {
+      font-weight: bold;
+      padding: 0.75rem 1rem;
+      background-color: #f4f4f4;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .stat-cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-
-  <!-- Navigation -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="../index.html">Enejistats</a>
+  <div class="profile-header">
+    <div>
+      <div>Alexander</div>
+      <h1>Isak</h1>
+      <div style="font-size: 2rem; font-weight: bold;">#14</div>
     </div>
-  </nav>
-
-  <!-- Player Profile -->
-  <div class="container py-4">
-    <div class="d-flex align-items-center mb-4">
-      <img src="../assets/images/player-photo.jpg" alt="Player" class="profile-photo" />
-      <div>
-        <h3 class="mb-0">John Doe</h3>
-        <small>DOB: 1998-05-21 | Nationality: Nigeria | Position: Midfielder | Club: Club X</small>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="text-center mb-4">
-      <button class="btn btn-outline-secondary tab-btn active" onclick="switchTab('summary')">Summary Match Stats</button>
-      <button class="btn btn-outline-secondary tab-btn" onclick="switchTab('individual')">Individual Match Stats</button>
-    </div>
-
-    <!-- Summary Stats -->
-    <div id="summary" class="tab-content active">
-      <div class="card shadow-sm p-4 mb-4">
-        <h5 class="mb-3">Average Per Match</h5>
-        <table class="table table-bordered table-sm text-center">
-          <thead>
-            <tr>
-              <th class="sticky">Statistic</th>
-              <th class="sticky">Average</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Minutes Played</td><td>87</td></tr>
-            <tr><td>Short Pass (Succ)</td><td>34</td></tr>
-            <tr><td>Short Pass (Unsucc)</td><td>5</td></tr>
-            <tr><td>Long Pass (Succ)</td><td>12</td></tr>
-            <tr><td>Long Pass (Unsucc)</td><td>2</td></tr>
-            <tr><td>Dribbles (Succ)</td><td>6</td></tr>
-            <tr><td>Dribbles (Unsucc)</td><td>3</td></tr>
-            <tr><td>Shots (On Target)</td><td>2</td></tr>
-            <tr><td>Shots (Off Target)</td><td>1</td></tr>
-            <tr><td>Clearances</td><td>4</td></tr>
-            <tr><td>Aerial Duels (Won)</td><td>5</td></tr>
-            <tr><td>Aerial Duels (Lost)</td><td>1</td></tr>
-            <tr><td>Fouls For</td><td>2</td></tr>
-            <tr><td>Fouls Against</td><td>1</td></tr>
-            <tr><td>Yellow Cards</td><td>0.3</td></tr>
-            <tr><td>Red Cards</td><td>0</td></tr>
-            <tr><td>Goalkeeper Saves</td><td>0</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Individual Stats -->
-    <div id="individual" class="tab-content">
-      <div class="card shadow-sm p-4">
-        <h5 class="mb-3">Individual Match Stats</h5>
-        <div class="table-responsive">
-          <table class="table table-bordered table-hover text-center">
-            <thead>
-              <tr>
-                <th class="sticky">Date</th>
-                <th class="sticky">Opponent</th>
-                <th class="sticky">Venue</th>
-                <th class="sticky">Score</th>
-                <th>Minutes</th>
-                <th>Short Pass (S/U)</th>
-                <th>Long Pass (S/U)</th>
-                <th>Dribbles (S/U)</th>
-                <th>Shots (OT/OF)</th>
-                <th>Clearances</th>
-                <th>Aerial Duels (W/L)</th>
-                <th>Fouls (F/A)</th>
-                <th>YC</th>
-                <th>RC</th>
-                <th>GK Saves</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>2025-04-12</td>
-                <td>Eagle FC</td>
-                <td>Home</td>
-                <td>3-1</td>
-                <td>90</td>
-                <td>38/6</td>
-                <td>14/3</td>
-                <td>5/2</td>
-                <td>3/1</td>
-                <td>7</td>
-                <td>6/2</td>
-                <td>2/1</td>
-                <td>1</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-              <!-- Add more match rows as needed -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
+    <img src="https://resources.premierleague.com/premierleague/photos/players/250x250/p223340.png" alt="Player Image" style="height: 120px;">
+  </div>  <div class="tabs">
+    <div class="tab active" data-tab="bio">Bio</div>
+    <div class="tab" data-tab="stats">Stats</div>
+    <div class="tab" data-tab="match">Match Center</div>
+  </div>  <div id="bio" class="content-section active p-3">
+    <h2>Player Overview</h2>
+    <div class="stat-item"><span>Nationality</span><span>🇸🇪 Sweden</span></div>
+    <div class="stat-item"><span>DOB</span><span>21/09/1999</span></div>
+    <div class="stat-item"><span>Club</span><span>Newcastle United</span></div>
+    <div class="stat-item"><span>Position</span><span>Forward</span></div>
+    <p class="mt-3 text-justify">
+      Alexander Isak is a Swedish professional footballer known for his speed, skill, and precision finishing.
+    </p>
+  </div>  <div id="stats" class="content-section">
+    <div class="sub-tabs">
+      <div class="sub-tab active" data-subtab="summary">Summary Stats</div>
+      <div class="sub-tab" data-subtab="individual">Detailed Stats</div>
+    </div><div id="summary" class="sub-tab-content active">
+  <div class="stat-cards">
+    <div class="card"><div>Pass Completion %</div><h2>87%</h2></div>
+    <div class="card"><div>Total Passes</div><h2>520</h2></div>
+    <div class="card"><div>Matches</div><h2>12</h2></div>
+    <div class="card"><div>Minutes</div><h2>970</h2></div>
   </div>
 
-  <!-- Footer -->
-  <footer class="bg-dark text-white text-center py-3">
-    &copy; 2025 Enejistats. All rights reserved.
-  </footer>
+  <div class="section"><h3>Attack</h3>
+    <div class="stat-item"><span>Goals</span><span>8</span></div>
+    <div class="stat-item"><span>Shot Accuracy</span><span>60%</span></div>
+    <div class="stat-item"><span>Conversion Rate</span><span>16%</span></div>
+  </div>
+  <div class="section"><h3>Team Play</h3>
+    <div class="stat-item"><span>Pass Accuracy</span><span>87%</span></div>
+    <div class="stat-item"><span>Passes per Match</span><span>43.3</span></div>
+  </div>
+  <div class="section"><h3>Defence</h3>
+    <div class="stat-item"><span>Saves</span><span>2</span></div>
+    <div class="stat-item"><span>Goals Conceded</span><span>1</span></div>
+  </div>
+</div>
 
-  <script>
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+<div id="individual" class="sub-tab-content">
+  <details class="match-entry" open>
+    <summary>Match 1 — 2025-04-15 | Score: 3-1 ➕</summary>
+    <div class="section"><h3>Attack</h3>
+      <div class="stat-item"><span>Goals</span><span>2</span></div>
+      <div class="stat-item"><span>Shots On</span><span>4</span></div>
+      <div class="stat-item"><span>Shots Off</span><span>2</span></div>
+    </div>
+    <div class="section"><h3>Team Play</h3>
+      <div class="stat-item"><span>Successful Passes</span><span>38</span></div>
+      <div class="stat-item"><span>Unsuccessful Passes</span><span>6</span></div>
+    </div>
+    <div class="section"><h3>Defence</h3>
+      <div class="stat-item"><span>Saves</span><span>1</span></div>
+      <div class="stat-item"><span>Goals Conceded</span><span>1</span></div>
+    </div>
+  </details>
+</div>
 
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
-    }
-  </script>
+  </div>  <div id="match" class="content-section p-3">
+    <h2>Match Center</h2>
+    <p class="text-justify">Coming soon: Live match tracking and video analysis tools.</p>
+  </div>  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const sections = document.querySelectorAll(".content-section");
+    const subTabs = document.querySelectorAll(".sub-tab");
+    const subTabContents = document.querySelectorAll(".sub-tab-content");
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        sections.forEach(sec => sec.classList.remove("active"));
+        document.getElementById(tab.dataset.tab).classList.add("active");
+      });
+    });
+
+    subTabs.forEach(subTab => {
+      subTab.addEventListener("click", () => {
+        subTabs.forEach(st => st.classList.remove("active"));
+        subTab.classList.add("active");
+        subTabContents.forEach(content => content.classList.remove("active"));
+        document.getElementById(subTab.dataset.subtab).classList.add("active");
+      });
+    });
+  </script>  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body>
 </html>
