@@ -1,27 +1,24 @@
 from flask import Flask, request, jsonify, Blueprint, render_template
 from flask_cors import CORS
+from pymongo import MongoClient
+from bson import ObjectId
 import os
 from datetime import datetime
 
-# Flask app config
+# Flask app
 app = Flask(__name__)
 CORS(app)
-app.secret_key = os.getenv('SECRET_KEY', 'fallback-secret-key-for-dev')
+app.secret_key = os.getenv('SECRET_KEY', 'fallback-secret')
 
-# In-memory storage (replacing MongoDB)
-data_store = {
-    'users': [],
-    'players': [],
-    'clubs': [],
-    'matches': [],
-    'stats': [],
-    'scouts': []
-}
+# MongoDB connection
+mongo_uri = os.getenv('MONGODB_URI')
+client = MongoClient(mongo_uri)
+db = client['enejistats']
 
-# Helper function to generate IDs
-def generate_id():
-    return str(len(data_store['users']) + len(data_store['players']) + 
-              len(data_store['clubs']) + len(data_store['matches']) + 1000)
+# Helper to convert ObjectId
+def serialize_doc(doc):
+    doc['_id'] = str(doc['_id'])
+    return doc
 
 # -------------------------------
 # AUTH ROUTES
@@ -35,39 +32,33 @@ def register():
     if not all(field in data for field in required):
         return jsonify({'error': 'Missing required fields'}), 400
     
-    for user in data_store['users']:
-        if user['email'] == data['email']:
-            return jsonify({'error': 'User already exists'}), 400
-    
+    if db.users.find_one({'email': data['email']}):
+        return jsonify({'error': 'User already exists'}), 400
+
     user = {
-        '_id': generate_id(),
         'username': data['username'],
         'email': data['email'],
-        'password': data['password'],  # Note: In production, hash this
+        'password': data['password'],  # Hash in production
         'role': data['role'],
-        'created_at': datetime.now().isoformat()
+        'created_at': datetime.now()
     }
-    data_store['users'].append(user)
-    return jsonify({'message': 'User registered successfully', 'user_id': user['_id']}), 201
+    result = db.users.insert_one(user)
+    return jsonify({'message': 'User registered', 'user_id': str(result.inserted_id)}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    
-    for user in data_store['users']:
-        if user['email'] == email and user['password'] == password:
-            return jsonify({
-                'message': 'Login successful',
-                'user': {
-                    'id': user['_id'],
-                    'username': user['username'],
-                    'email': user['email'],
-                    'role': user['role']
-                }
-            }), 200
-    
+    user = db.users.find_one({'email': data.get('email'), 'password': data.get('password')})
+    if user:
+        return jsonify({
+            'message': 'Login successful',
+            'user': {
+                'id': str(user['_id']),
+                'username': user['username'],
+                'email': user['email'],
+                'role': user['role']
+            }
+        }), 200
     return jsonify({'error': 'Invalid credentials'}), 401
 
 # -------------------------------
@@ -80,45 +71,31 @@ def create_player():
     data = request.get_json()
     required = ['name', 'position', 'age', 'club', 'nationality']
     if not all(field in data for field in required):
-        return jsonify({'error': 'Missing player fields'}), 400
-    
-    player = {
-        '_id': generate_id(),
-        'name': data['name'],
-        'position': data['position'],
-        'age': int(data['age']),
-        'club': data['club'],
-        'nationality': data['nationality'],
-        'market_value': data.get('market_value', 0),
-        'goals': data.get('goals', 0),
-        'assists': data.get('assists', 0),
-        'created_at': datetime.now().isoformat()
-    }
-    data_store['players'].append(player)
-    return jsonify({'message': 'Player created successfully', 'player_id': player['_id']}), 201
+        return jsonify({'error': 'Missing fields'}), 400
+
+    data['created_at'] = datetime.now()
+    result = db.players.insert_one(data)
+    return jsonify({'message': 'Player created', 'player_id': str(result.inserted_id)}), 201
 
 @player_bp.route('', methods=['GET'])
 def get_players():
-    return jsonify(data_store['players']), 200
+    players = list(db.players.find())
+    return jsonify([serialize_doc(p) for p in players]), 200
 
 @player_bp.route('/<player_id>', methods=['GET'])
 def get_player(player_id):
-    for player in data_store['players']:
-        if player['_id'] == player_id:
-            return jsonify(player), 200
+    player = db.players.find_one({'_id': ObjectId(player_id)})
+    if player:
+        return jsonify(serialize_doc(player)), 200
     return jsonify({'error': 'Player not found'}), 404
 
 @player_bp.route('/<player_id>', methods=['PUT'])
 def update_player(player_id):
     data = request.get_json()
-    for i, player in enumerate(data_store['players']):
-        if player['_id'] == player_id:
-            for key, value in data.items():
-                if key != '_id':
-                    player[key] = value
-            player['updated_at'] = datetime.now().isoformat()
-            return jsonify({'message': 'Player updated successfully'}), 200
-    return jsonify({'error': 'Player not found'}), 404
+    result = db.players.update_one({'_id': ObjectId(player_id)}, {'$set': data})
+    if result.modified_count:
+        return jsonify({'message': 'Player updated'}), 200
+    return jsonify({'error': 'Update failed'}), 400
 
 # -------------------------------
 # SCOUT ROUTES
@@ -126,35 +103,25 @@ def update_player(player_id):
 scout_bp = Blueprint('scout_bp', __name__)
 
 @scout_bp.route('/reports', methods=['POST'])
-def create_scout_report():
+def create_report():
     data = request.get_json()
     required = ['player_id', 'scout_name', 'rating', 'notes']
     if not all(field in data for field in required):
-        return jsonify({'error': 'Missing scout report fields'}), 400
+        return jsonify({'error': 'Missing fields'}), 400
     
-    report = {
-        '_id': generate_id(),
-        'player_id': data['player_id'],
-        'scout_name': data['scout_name'],
-        'rating': float(data['rating']),
-        'notes': data['notes'],
-        'technical_skills': data.get('technical_skills', 0),
-        'physical_attributes': data.get('physical_attributes', 0),
-        'mental_attributes': data.get('mental_attributes', 0),
-        'recommendation': data.get('recommendation', 'Further evaluation needed'),
-        'created_at': datetime.now().isoformat()
-    }
-    data_store['scouts'].append(report)
-    return jsonify({'message': 'Scout report created successfully', 'report_id': report['_id']}), 201
+    data['created_at'] = datetime.now()
+    result = db.scout_reports.insert_one(data)
+    return jsonify({'message': 'Report created', 'report_id': str(result.inserted_id)}), 201
 
 @scout_bp.route('/reports', methods=['GET'])
-def get_scout_reports():
-    return jsonify(data_store['scouts']), 200
+def get_reports():
+    reports = list(db.scout_reports.find())
+    return jsonify([serialize_doc(r) for r in reports]), 200
 
 @scout_bp.route('/reports/<player_id>', methods=['GET'])
-def get_player_scout_reports(player_id):
-    reports = [report for report in data_store['scouts'] if report['player_id'] == player_id]
-    return jsonify(reports), 200
+def get_reports_by_player(player_id):
+    reports = list(db.scout_reports.find({'player_id': player_id}))
+    return jsonify([serialize_doc(r) for r in reports]), 200
 
 # -------------------------------
 # CLUB ROUTES
@@ -166,24 +133,16 @@ def create_club():
     data = request.get_json()
     required = ['name', 'league', 'coach', 'country', 'founded', 'stadium']
     if not all(field in data for field in required):
-        return jsonify({'error': 'Missing club fields'}), 400
-    
-    club = {
-        '_id': generate_id(),
-        'name': data['name'],
-        'league': data['league'],
-        'coach': data['coach'],
-        'country': data['country'],
-        'founded': int(data['founded']),
-        'stadium': data['stadium'],
-        'created_at': datetime.now().isoformat()
-    }
-    data_store['clubs'].append(club)
-    return jsonify({'message': 'Club created successfully', 'club_id': club['_id']}), 201
+        return jsonify({'error': 'Missing fields'}), 400
+
+    data['created_at'] = datetime.now()
+    result = db.clubs.insert_one(data)
+    return jsonify({'message': 'Club created', 'club_id': str(result.inserted_id)}), 201
 
 @club_bp.route('', methods=['GET'])
 def get_clubs():
-    return jsonify(data_store['clubs']), 200
+    clubs = list(db.clubs.find())
+    return jsonify([serialize_doc(c) for c in clubs]), 200
 
 # -------------------------------
 # MATCH ROUTES
@@ -195,24 +154,16 @@ def create_match():
     data = request.get_json()
     required = ['home_team', 'away_team', 'date', 'status', 'venue']
     if not all(field in data for field in required):
-        return jsonify({'error': 'Missing match fields'}), 400
-    
-    match = {
-        '_id': generate_id(),
-        'home_team': data['home_team'],
-        'away_team': data['away_team'],
-        'date': data['date'],
-        'status': data['status'],
-        'score': data.get('score'),
-        'venue': data['venue'],
-        'created_at': datetime.now().isoformat()
-    }
-    data_store['matches'].append(match)
-    return jsonify({'message': 'Match created successfully', 'match_id': match['_id']}), 201
+        return jsonify({'error': 'Missing fields'}), 400
+
+    data['created_at'] = datetime.now()
+    result = db.matches.insert_one(data)
+    return jsonify({'message': 'Match created', 'match_id': str(result.inserted_id)}), 201
 
 @match_bp.route('', methods=['GET'])
 def get_matches():
-    return jsonify(data_store['matches']), 200
+    matches = list(db.matches.find())
+    return jsonify([serialize_doc(m) for m in matches]), 200
 
 # -------------------------------
 # FRONTEND ROUTE
@@ -222,24 +173,21 @@ def index():
     return render_template('index.html')
 
 # -------------------------------
-# API STATUS ROUTE
+# STATUS
 # -------------------------------
 @app.route('/api/status')
-def api_status():
+def status():
     return jsonify({
         'status': 'running',
-        'message': 'EnejiStats API is operational',
-        'data_counts': {
-            'users': len(data_store['users']),
-            'players': len(data_store['players']),
-            'clubs': len(data_store['clubs']),
-            'matches': len(data_store['matches']),
-            'scout_reports': len(data_store['scouts'])
-        }
+        'users': db.users.count_documents({}),
+        'players': db.players.count_documents({}),
+        'clubs': db.clubs.count_documents({}),
+        'matches': db.matches.count_documents({}),
+        'reports': db.scout_reports.count_documents({})
     }), 200
 
 # -------------------------------
-# REGISTER ALL BLUEPRINTS
+# REGISTER BLUEPRINTS
 # -------------------------------
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(player_bp, url_prefix='/api/players')
