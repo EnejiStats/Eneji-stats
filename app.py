@@ -1,7 +1,5 @@
 from flask import Flask, request, jsonify, Blueprint, render_template
 from flask_cors import CORS
-from flask import rfrom flask import Flask, request, jsonify, Blueprint, render_template
-from flask_cors import CORS
 from flask import render_template
 from pymongo import MongoClient
 from bson import ObjectId
