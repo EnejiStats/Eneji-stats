@@ -1,4 +1,3 @@
-# models/db.py
 from pymongo import MongoClient
 import os
 
