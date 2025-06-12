@@ -1,1 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scout Dashboard | Enejistats</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      overflow-x: auto;
+      padding: 1rem;
+      background-color: #f4f4f4;
+      border-bottom: 2px solid #ccc;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      font-weight: bold;
+      white-space: nowrap;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-color: #25003e;
+      background-color: #fff;
+    }
+    .content-section {
+      display: none;
+      padding: 1rem;
+    }
+    .content-section.active {
+      display: block;
+    }
+    .profile-card {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      background-color: #fafafa;
+      margin-bottom: 1rem;
+    }
+    .profile-card img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .filter-panel, .compare-panel {
+      padding: 1rem;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    .card button.tag-btn {
+      margin-top: 0.5rem;
+      background-color: #25003e;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-header">
+    <div>
+      <h1>Welcome, Scout</h1>
+      <p>Monitor, filter, and compare player performances</p>
+    </div>
+  </div>
 
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="talent">Talent Pool</div>
+    <div class="tab" data-tab="watchlist">Watch List</div>
+  </div>
+
+  <div id="overview" class="content-section active">
+    <div id="scoutProfile" class="profile-card">
+      <img src="" alt="Scout Photo" id="scoutPhoto" />
+      <div class="info">
+        <h3 id="scoutName">Scout Name</h3>
+        <p><strong>Region:</strong> <span id="scoutRegion">Unknown</span></p>
+      </div>
+    </div>
+    <p>Use the Talent Pool tab to filter and evaluate players. Add interesting prospects to your Watch List for closer review.</p>
+  </div>
+
+  <div id="talent" class="content-section">
+    <div class="filter-panel">
+      <h3>Filter Options</h3>
+      <input type="number" id="ageMin" placeholder="Min Age" />
+      <input type="number" id="ageMax" placeholder="Max Age" />
+      <input type="text" id="nationality" placeholder="Nationality" />
+      <input type="number" id="minGoals" placeholder="Min Goals" />
+      <input type="number" id="minPassAccuracy" placeholder="Min Pass Accuracy" />
+      <input type="number" id="minInterceptions" placeholder="Min Interceptions" />
+      <input type="number" id="maxFouls" placeholder="Max Fouls" />
+      <button onclick="applyFilters()">Apply Filters</button>
+    </div>
+    <div class="stat-cards" id="filteredPlayers"></div>
+    <div class="compare-panel">
+      <h3>Compare Players</h3>
+      <table>
+        <thead>
+          <tr><th>Stat</th><th>Player 1</th><th>Player 2</th><th>Player 3</th></tr>
+        </thead>
+        <tbody id="comparisonBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="watchlist" class="content-section">
+    <h3>Watch List</h3>
+    <div class="stat-cards" id="watchListCards"></div>
+  </div>
+
+  <script src="assets/js/tabs.js"></script>
+  <script>
+    let selectedIds = [];
+    let watchList = JSON.parse(localStorage.getItem('watchList') || '[]');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('/api/scout/me');
+        const data = await res.json();
+        document.getElementById('scoutName').innerText = data.name || 'Scout';
+        document.getElementById('scoutRegion').innerText = data.region || 'Unknown';
+        document.getElementById('scoutPhoto').src = data.photo || 'https://via.placeholder.com/100';
+      } catch (e) {
+        console.warn("Scout profile failed to load");
+      }
+      renderWatchList();
+
+      // Enable tab toggle
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab).classList.add('active');
+        });
+      });
+    });
+
+    function toggleWatchList(id, name) {
+      const exists = watchList.find(p => p.id === id);
+      if (exists) {
+        watchList = watchList.filter(p => p.id !== id);
+      } else {
+        watchList.push({ id, name });
+      }
+      localStorage.setItem('watchList', JSON.stringify(watchList));
+      renderWatchList();
+    }
+
+    function renderWatchList() {
+      const container = document.getElementById('watchListCards');
+      container.innerHTML = '';
+      watchList.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h4>${p.name}</h4><button class="tag-btn" onclick="toggleWatchList('${p.id}', '${p.name}')">Remove from Watch List</button>`;
+        container.appendChild(card);
+      });
+    }
+
+    async function applyFilters() {
+      const filters = {
+        age_min: document.getElementById('ageMin').value,
+        age_max: document.getElementById('ageMax').value,
+        nationality: document.getElementById('nationality').value.trim(),
+        min_goals: document.getElementById('minGoals').value,
+        min_pass_accuracy: document.getElementById('minPassAccuracy').value,
+        min_interceptions: document.getElementById('minInterceptions').value,
+        max_fouls: document.getElementById('maxFouls').value
+      };
+      const hasFilter = Object.values(filters).some(v => v);
+      if (!hasFilter) return alert("Enter at least one filter");
+
+      const res = await fetch('/api/players/filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(filters)
+      });
+      const players = await res.json();
+      const box = document.getElementById('filteredPlayers');
+      box.innerHTML = '';
+      players.forEach(p => {
+        const isWatch = watchList.find(w => w.id === p._id);
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <h4>${p.name}</h4>
+          <p>Nationality: ${p.nationality}</p>
+          <p>Age: ${p.age}</p>
+          <button onclick="selectPlayer('${p._id}', '${p.name}')">Compare</button>
+          <button class="tag-btn" onclick="toggleWatchList('${p._id}', '${p.name}')">
+            ${isWatch ? 'Remove from Watch List' : 'Add to Watch List'}
+          </button>`;
+        box.appendChild(card);
+      });
+    }
+
+    async function selectPlayer(id, name) {
+      if (selectedIds.includes(id)) return;
+      if (selectedIds.length >= 3) return alert("Max 3 players");
+      selectedIds.push(id);
+      await renderComparison();
+    }
+
+    async function renderComparison() {
+      const res = await fetch(`/api/players/compare?ids=${selectedIds.join(',')}`);
+      const players = await res.json();
+      const rows = [
+        ['Goals'], ['Pass Accuracy'], ['Interceptions'], ['Fouls']
+      ];
+      players.forEach((p, i) => {
+        rows[0][i+1] = p.goals;
+        rows[1][i+1] = p.pass_accuracy + '%';
+        rows[2][i+1] = p.interceptions;
+        rows[3][i+1] = p.fouls;
+      });
+      const tbody = document.getElementById('comparisonBody');
+      tbody.innerHTML = rows.map(r => `<tr>${r.map(cell => `<td>${cell||''}</td>`).join('')}</tr>`).join('');
+    }
+  </script>
+</body>
+</html>
