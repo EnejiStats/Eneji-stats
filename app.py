@@ -166,10 +166,17 @@ def get_matches():
     return jsonify([serialize_doc(m) for m in matches]), 200
 
 # -------------------------------
-# FRONTEND ROUTE
+# ROOT ROUTE FOR RENDER HEALTH CHECK
 # -------------------------------
-@app.route('/')
+@app.route('/', methods=['GET', 'HEAD'])
 def index():
+    return '✅ EnejiStats API is running on Render!'
+
+# -------------------------------
+# OPTIONAL: Serve Frontend Page
+# -------------------------------
+@app.route('/home')
+def home():
     return render_template('index.html')
 
 # -------------------------------
