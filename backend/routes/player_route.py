@@ -1,5 +1,3 @@
-# routes/player_routes.py
-
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from models.db import players, users
