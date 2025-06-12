@@ -5,7 +5,7 @@ services:
     rootDir: Eneji-stats-backend
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app : app
+    startCommand: gunicorn app:app
     envVars:
       - key: MONGODB_URI
         value: mongodb+srv://enejistats:enejiPass123%21@enejistats.o63uxvq.mongodb.net/enejistats?retryWrites=true&w=majority&appName=Enejistats
